@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Porra Wawawiwa</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+body{
+  margin:0;
+  font-family:Inter, Arial, sans-serif;
+  background: linear-gradient(135deg,#C60C30,#8B0000,#DC143C);
+  background-attachment: fixed;
+  color:#111;
+}
+
+/* contenedor principal */
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:16px;
+}
+
+/* título */
+h1{
+  text-align:center;
+  color:white;
+  margin:10px 0 20px;
+  font-size:28px;
+  letter-spacing:1px;
+}
+
+/* tarjetas */
+.card{
+  background:rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.2);
+}
+
+/* inputs */
+input, select{
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  font-size:13px;
+  width:100%;
+  box-sizing:border-box;
+}
+
+label{
+  font-size:12px;
+  margin-top:6px;
+  display:block;
+  color:#333;
+}
+
+/* botón */
+button{
+  background:#F9C917;
+  border:none;
+  padding:12px 18px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  font-size:14px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+button:hover{
+  background:#E8B80D;
+}
+
+/* GRID grupos */
+#grupos{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:10px;
+}
+
+/* card grupo compacta */
+.group-card h2{
+  margin:0 0 5px;
+  font-size:14px;
+}
+
+.group-card strong{
+  font-size:11px;
+  color:#555;
+}
+
+/* ranking compacto */
+.group-card select{
+  margin-top:3px;
+}
+
+/* partidos */
+.match{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  padding:6px 0;
+  border-bottom:1px solid #eee;
+}
+
+.match strong{
+  font-size:12px;
+  min-width:110px;
+  line-height:1.3;
+}
+
+.match select,
+.match input{
+  font-size:12px;
+  padding:5px;
+}
+
+/* eliminatorias */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+@media(max-width:900px){
+  .grid{ grid-template-columns:1fr; }
+}
+
+/* sección final */
+.center{
+  text-align:center;
+}
+
+/* compactar espacio global */
+.card h2{
+  font-size:16px;
+  margin:0 0 8px;
+}
+
+.card h3{
+  font-size:13px;
+  margin:8px 0 5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏆 PORRA MUNDIAL 2026 - MIBARRIO</h1>
+
+<div class="card">
+  <label>Nombre</label>
+  <input id="nombre" />
+ <label>Contacto</label>
+<input id="contacto" />
+
+</div>
+
+<div id="grupos"></div>
+
+
+<div class="card">
+  <h2>🏁 Eliminatorias</h2>
+
+  <div class="grid">
+    <div>
+      <h3>Cuartos</h3>
+      <div id="cuartos"></div>
+    </div>
+
+    <div>
+      <h3>Semis</h3>
+      <div id="semis"></div>
+    </div>
+  </div>
+
+  <h3>Final</h3>
+
+  <label>Campeón</label>
+  <select id="campeon"></select>
+
+  <label>Subcampeón</label>
+  <select id="subcampeon"></select>
+</div>
+
+<div class="card">
+  <h2>🎯 Premios</h2>
+
+  <label>Pichichi</label>
+  <input id="pichichi">
+  <label>Pichichi español</label>
+  <input id="pichichi_espanol">
+  <label>Mejor portero</label>
+  <input id="mejor_portero">
+  <label>Mejor jugador</label>
+  <input id="mejor_jugador">
+  <label>Mejor jugador joven</label>
+  <input id="mejor_jugador_joven">
+</div>
+
+<div class="center">
+  <button onclick="enviar()">Enviar porra</button>
+</div>
+
+</div>
+
+<script>
+
+// =====================
+// EQUIPOS
+// =====================
+const data = {
+ A:["Corea","México","Chequia","Sudáfrica"],
+ B:["Suiza","Catar","Canadá","Bosnia"],
+ C:["Brasil","Marruecos","Escocia","Haití"],
+ D:["Turquía","EE.UU.","Australia","Paraguay"],
+ E:["Alemania","Costa de Marfil","Ecuador","Curazao"],
+ F:["Holanda","Túnez","Japón","Suecia"],
+ G:["Bélgica","Egipto","Nueva Zelanda","Irán"],
+ H:["España","Uruguay","Arabia","Cabo Verde"],
+ I:["Francia","Senegal","Noruega","Irak"],
+ J:["Argentina","Argelia","Austria","Jordania"],
+ K:["Portugal","Colombia","Congo","Uzbekistán"],
+ L:["Inglaterra","Croacia","Ghana","Panamá"]
+};
+
+const sortOptions = arr => [...arr].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+const allTeams = sortOptions(Object.values(data).flat());
+const emptyOption = `<option value="">—</option>`;
+
+// =====================
+// GRUPOS UI
+// =====================
+const gdiv = document.getElementById("grupos");
+
+Object.keys(data).forEach(g=>{
+  const card=document.createElement("div");
+  card.className="card group-card";
+
+  const teams = sortOptions(data[g]);
+
+  let html=`<h2>Grupo ${g}</h2>`;
+  html+=`<strong>${teams.join(", ")}</strong>`;
+
+  for(let i=1;i<=4;i++){
+    html+=`
+      <label>${i}º
+        <select class="ranking" data-group="${g}">
+          <option value="">—</option>
+          ${teams.map(t=>`<option value="${t}">${t}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  card.innerHTML=html;
+  gdiv.appendChild(card);
+});
+
+// evitar duplicados
+document.addEventListener("change",(e)=>{
+  if(!e.target.classList.contains("ranking")) return;
+
+  const group = e.target.dataset.group;
+  const selects = document.querySelectorAll(`.ranking[data-group="${group}"]`);
+
+  const used = Array.from(selects).map(s=>s.value).filter(Boolean);
+
+  selects.forEach(sel=>{
+    const current = sel.value;
+    Array.from(sel.options).forEach(opt=>{
+      if(!opt.value) return;
+      opt.disabled = used.includes(opt.value) && opt.value !== current;
+    });
+  });
+});
+
+
+// =====================
+// PARTIDOS
+// =====================
+const matches = {
+ A:["Mexico-Sudafrica","Chequia-Sudafrica","Chequia-Mexico"],
+ B:["Canada-Bosnia","Suiza-Bosnia","Suiza-Canada"],
+ C:["Brasil-Marruecos","Escocia-Marruecos","Escocia-Brasil"],
+ D:["Australia-Turquia","EEUU-Australia","Turquia-EEUU"],
+ E:["CostaMarfil-Ecuador","Alemania-CostaMarfil","Ecuador-Alemania"],
+ F:["Holanda-Japon","Holanda-Suecia","Japon-Suecia"],
+ G:["Belgica-Egipto","Belgica-Iran","Egipto-Iran"],
+ H:["Espana-CaboVerde","Espana-Arabia","Uruguay-Espana"],
+ I:["Francia-Senegal","Noruega-Senegal","Noruega-Francia"],
+ J:["Argentina-Argelia","Argentina-Austria","Argelia-Austria"],
+ K:["Portugal-Congo","Portugal-Uzbekistan","Colombia-Portugal"],
+ L:["Inglaterra-Croacia","Inglaterra-Ghana","Croacia-Ghana"]
+};
+
+Object.keys(matches).forEach(g=>{
+  const card=document.createElement("div");
+  card.className="card";
+
+  let html=`<h2>Partidos ${g}</h2>`;
+
+  matches[g].forEach(m=>{
+    html+=`
+      <div class="match">
+        <strong>${m}</strong>
+
+        <select class="tipo">
+          <option value="1x2">1X2</option>
+          <option value="exacto">Exacto</option>
+          <option value="goleador">Goleador</option>
+        </select>
+
+        <span class="input-container">
+          <select class="valor">
+            <option>1</option>
+            <option>X</option>
+            <option>2</option>
+          </select>
+        </span>
+      </div>
+    `;
+  });
+
+  card.innerHTML=html;
+  gdiv.appendChild(card);
+});
+
+// dinámico partidos
+document.addEventListener("change",e=>{
+  if(e.target.classList.contains("tipo")){
+    const c=e.target.parentElement.querySelector(".input-container");
+
+    if(e.target.value==="1x2"){
+      c.innerHTML=`<select class="valor"><option>1</option><option>X</option><option>2</option></select>`;
+    }
+    if(e.target.value==="exacto"){
+      c.innerHTML=`<input class="valor" placeholder="2-1">`;
+    }
+    if(e.target.value==="goleador"){
+      c.innerHTML=`<input class="valor" placeholder="Jugador">`;
+    }
+  }
+});
+
+// =====================
+// ELIMINATORIAS
+// =====================
+function fill(id,count){
+  const el=document.getElementById(id);
+  for(let i=1;i<=count;i++){
+    el.innerHTML+=`
+      <label>${i}
+        <select class="${id}">
+          ${emptyOption}
+          ${allTeams.map(t=>`<option>${t}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }
+}
+
+fill("cuartos",8);
+fill("semis",4);
+
+const campeon=document.getElementById("campeon");
+const sub=document.getElementById("subcampeon");
+
+function validarFormulario(){
+  const nombre = document.getElementById("nombre").value.trim();
+  if(!nombre){
+    alert("Debes indicar tu nombre.");
+    document.getElementById("nombre").focus();
+    return false;
+  }
+
+  const rankings = Array.from(document.querySelectorAll(".group-card .ranking"));
+  if(rankings.some(r=>!r.value)){
+    alert("Debes completar todas las clasificaciones de los grupos.");
+    return false;
+  }
+
+  const cuartos = Array.from(document.querySelectorAll(".cuartos")).map(e=>e.value);
+  if(cuartos.some(v=>!v)){
+    alert("Debes completar todos los equipos de cuartos de final.");
+    return false;
+  }
+
+  const semis = Array.from(document.querySelectorAll(".semis")).map(e=>e.value);
+  if(semis.some(v=>!v)){
+    alert("Debes completar todos los equipos de semifinales.");
+    return false;
+  }
+
+  if(!campeon.value){
+    alert("Debes seleccionar un campeón.");
+    campeon.focus();
+    return false;
+  }
+
+  if(!sub.value){
+    alert("Debes seleccionar un subcampeón.");
+    sub.focus();
+    return false;
+  }
+
+  const premios = [
+    "pichichi",
+    "pichichi_espanol",
+    "mejor_portero",
+    "mejor_jugador",
+    "mejor_jugador_joven"
+  ];
+
+  const faltan = premios.filter(id=>!document.getElementById(id).value.trim());
+  if(faltan.length){
+    alert("Debes completar todos los campos de premios.");
+    document.getElementById(faltan[0]).focus();
+    return false;
+  }
+
+  return true;
+}
+
+campeon.innerHTML = emptyOption;
+sub.innerHTML = emptyOption;
+
+allTeams.forEach(t=>{
+  campeon.innerHTML+=`<option>${t}</option>`;
+  sub.innerHTML+=`<option>${t}</option>`;
+});
+
+// =====================
+// ENVIAR
+// =====================
+function enviar(){
+  if(!validarFormulario()) return;
+  const tipoMap = {
+    "1x2":"1x2",
+    "exacto":"resultado_exacto",
+    "goleador":"goleador"
+  };
+  const matchData = {};
+
+  Object.keys(matches).forEach(g=>{
+    matchData[g]={};
+    const card = Array.from(document.querySelectorAll('.card')).find(c=> c.querySelector('h2')?.textContent===`Partidos ${g}`);
+    if(!card) return;
+    card.querySelectorAll('.match').forEach(matchEl=>{
+      const partido = matchEl.querySelector('strong').textContent;
+      const tipo = tipoMap[matchEl.querySelector('.tipo').value] || '';
+      const valor = matchEl.querySelector('.valor')?.value || '';
+      matchData[g][partido] = {tipo, valor};
+    });
+  });
+
+  const grupos={};
+
+  document.querySelectorAll(".group-card").forEach(c=>{
+    const g=c.querySelector("h2").textContent.replace("Grupo ","");
+    grupos[g]={clasificacion:[],partidos: matchData[g] || {}};
+
+    c.querySelectorAll(".ranking").forEach(r=>{
+      grupos[g].clasificacion.push(r.value);
+    });
+  });
+
+  const json={
+    participante:{
+      nombre:document.getElementById("nombre").value,
+      contacto:document.getElementById("contacto").value
+    },
+    grupos,
+    eliminatorias:{
+      cuartos:Array.from(document.querySelectorAll(".cuartos")).map(e=>e.value),
+      semifinalistas:Array.from(document.querySelectorAll(".semis")).map(e=>e.value),
+      campeon:campeon.value,
+      subcampeon:sub.value
+    },
+    premios:{
+      pichichi:document.getElementById("pichichi").value,
+      pichichi_espanol:document.getElementById("pichichi_espanol").value,
+      mejor_portero:document.getElementById("mejor_portero").value,
+      mejor_jugador:document.getElementById("mejor_jugador").value,
+      mejor_jugador_joven:document.getElementById("mejor_jugador_joven").value
+    }
+  };
+
+ fetch("https://script.google.com/macros/s/AKfycbzgsoP3Le7ZrCk7tpvcsJQLSp6HGAXZR-6cjmejhZ_K5t7eSt7nyGgCata0pZ5JDKQW/exec",{
+      method: "POST",
+    mode: "no-cors",
+    headers: {
+        "Content-Type": "text/plain"
+    },
+    body: JSON.stringify({
+    sheet: "PARTICIPANTES",
+    nombre: json.participante.nombre,
+    data: JSON.stringify(json)
+  })
+});
+
+  alert("Enviado!");
+}
+
+</script>
+
+</body>
+</html>
